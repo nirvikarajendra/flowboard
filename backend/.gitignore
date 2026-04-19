@@ -1,32 +1,36 @@
-<<<<<<< HEAD
+# Dependencies
 node_modules
+**/node_modules
+
+# Build output
 dist
+dist-ssr
+
+# Environment variables
 .env
+.env.local
+
+# Package locks
+**/package-lock.json
+
+# OS files
 .DS_Store
-dbscript
-=======
+
 # Logs
 logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
->>>>>>> 7440f52774eb92808ab53819267a4afbe2d3050a
+
+# Local files
+*.local
+dbscript
