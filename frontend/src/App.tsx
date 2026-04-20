@@ -4,9 +4,12 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import BoardPage from './pages/BoardPage'
 
-function App() {
+function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('token')
+  return token ? <>{children}</> : <Navigate to="/login" />
+}
 
+function App() {
   return (
     <BrowserRouter>
       <Routes>
@@ -14,11 +17,19 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route
           path="/dashboard"
-          element={token ? <Dashboard /> : <Navigate to="/login" />}
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
         />
         <Route
           path="/board/:boardId"
-          element={token ? <BoardPage /> : <Navigate to="/login" />}
+          element={
+            <PrivateRoute>
+              <BoardPage />
+            </PrivateRoute>
+          }
         />
         <Route path="/" element={<Navigate to="/dashboard" />} />
       </Routes>

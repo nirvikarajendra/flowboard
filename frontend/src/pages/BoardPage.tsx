@@ -82,6 +82,21 @@ function BoardPage() {
     }
   }
 
+  const deleteColumn = async (columnId: string) => {
+    try {
+      await api.delete(`/columns/${columnId}`)
+      setBoard(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          columns: prev.columns.filter(col => col.id !== columnId)
+        }
+      })
+    } catch (err) {
+      console.log("Error deleting column:", err)
+    }
+  }
+
   if (!board) return <div className="p-6">Loading...</div>
 
   return (
@@ -111,6 +126,7 @@ function BoardPage() {
               column={column}
               onAddCard={addCard}
               onDeleteCard={deleteCard}
+              onDeleteColumn={deleteColumn}
             />
           ))}
         </div>

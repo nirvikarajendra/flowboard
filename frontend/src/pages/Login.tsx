@@ -9,11 +9,14 @@ function Login() {
   const navigate = useNavigate()
 
   const handleLogin = async () => {
+    console.log('Login clicked', email, password)
     try {
       const res = await api.post('/auth/login', { email, password })
+      console.log('Login response:', res.data)
       localStorage.setItem('token', res.data.token)
       navigate('/dashboard')
     } catch (err) {
+      console.log('Login error:', err)
       setError("Invalid email or password")
     }
   }
@@ -40,7 +43,7 @@ function Login() {
           className="w-full p-3 border rounded mb-4 text-sm"
         />
         <button
-          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          onClick={handleLogin}
           className="w-full bg-blue-500 text-white p-3 rounded font-bold"
         >
           Login

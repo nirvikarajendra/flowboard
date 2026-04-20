@@ -4,8 +4,8 @@ import { createCard, deleteCard, updateCard, moveCard } from './card.service'
 
 export const addCard = async (req: AuthRequest, res: Response) =>{
     try {
-        const {columnId, title, position, description} = req.body
-        const card = await createCard(columnId, title, position, description)
+        const {column_id, title, position, description} = req.body
+        const card = await createCard(column_id, title, position, description)
         res.status(201).json(card)
     } catch (error: any) {
         res.status(400).json({ message: error.message})
