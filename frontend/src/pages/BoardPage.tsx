@@ -5,13 +5,13 @@ import type { Board } from '../types'
 import Column from '../components/Column'
 import Navbar from '../components/Navbar'
 import { io, Socket } from 'socket.io-client'
-
+import { DndContext } from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
 
 function BoardPage() {
   const { boardId } = useParams()
   const [board, setBoard] = useState<Board | null>(null)
   const [newColumnTitle, setNewColumnTitle] = useState("")
-
   const socketRef = useRef<Socket | null>(null)
 
   useEffect(() => {
@@ -41,6 +41,26 @@ function BoardPage() {
             ...col,
             cards: col.cards.filter(card => card.id !== data.cardId)
           }))
+        }
+      })
+    })
+
+    socketRef.current.on('card_moved', (data: any) => {
+      setBoard(prev => {
+        if (!prev) return prev
+        let movedCard: any = null
+        return {
+          ...prev,
+          columns: prev.columns.map(col => {
+            const found = col.cards.find(c => c.id === data.cardId)
+            if (found) movedCard = found
+            return { ...col, cards: col.cards.filter(c => c.id !== data.cardId) }
+          }).map(col => {
+            if (col.id === data.toColumnId && movedCard) {
+              return { ...col, cards: [...col.cards, movedCard] }
+            }
+            return col
+          })
         }
       })
     })
@@ -139,6 +159,51 @@ function BoardPage() {
     }
   }
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over) return
+    if (!board) return
+
+    const cardId = active.id as string
+    const toColumnId = over.id as string
+
+    const fromColumn = board.columns.find(col =>
+      col.cards.some(card => card.id === cardId)
+    )
+
+    if (!fromColumn) return
+    if (fromColumn.id === toColumnId) return
+
+    const card = fromColumn.cards.find(card => card.id === cardId)!
+
+    setBoard(prev => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        columns: prev.columns.map(col => {
+          if (col.id === fromColumn.id) {
+            return { ...col, cards: col.cards.filter(c => c.id !== cardId) }
+          }
+          if (col.id === toColumnId) {
+            return { ...col, cards: [...col.cards, card] }
+          }
+          return col
+        })
+      }
+    })
+
+    try {
+      await api.patch(`/cards/${cardId}/move`, {
+        column_id: toColumnId,
+        position: 0
+      })
+      socketRef.current?.emit('card_moved', { boardId, cardId, toColumnId })
+    } catch (err) {
+      console.log("Error moving card:", err)
+    }
+  }
+
   if (!board) return <div className="p-6">Loading...</div>
 
   return (
@@ -161,17 +226,19 @@ function BoardPage() {
             Add Column
           </button>
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {board.columns.map((column) => (
-            <Column
-              key={column.id}
-              column={column}
-              onAddCard={addCard}
-              onDeleteCard={deleteCard}
-              onDeleteColumn={deleteColumn}
-            />
-          ))}
-        </div>
+        <DndContext onDragEnd={handleDragEnd}>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {board.columns.map((column) => (
+              <Column
+                key={column.id}
+                column={column}
+                onAddCard={addCard}
+                onDeleteCard={deleteCard}
+                onDeleteColumn={deleteColumn}
+              />
+            ))}
+          </div>
+        </DndContext>
       </div>
     </div>
   )

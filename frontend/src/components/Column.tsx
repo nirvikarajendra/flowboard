@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Column as ColumnType } from '../types'
 import Card from './Card'
+import { useDroppable } from '@dnd-kit/core'
 
 interface ColumnProps {
   column: ColumnType
@@ -11,6 +12,8 @@ interface ColumnProps {
 
 function Column({ column, onAddCard, onDeleteCard, onDeleteColumn }: ColumnProps) {
   const [input, setInput] = useState("")
+
+  const { setNodeRef, isOver } = useDroppable( {id: column.id} )
 
   const handleAdd = () => {
     if (input.trim() === "") return
@@ -29,13 +32,18 @@ function Column({ column, onAddCard, onDeleteCard, onDeleteColumn }: ColumnProps
           x
         </button>
       </div>
-      {column.cards.map((card) => (
-        <Card
-          key={card.id}
-          card={card}
-          onDelete={onDeleteCard}
-        />
-      ))}
+      <div
+        ref={setNodeRef}
+        className={`min-h-16 rounded ${isOver ? 'bg-gray-300' : ''}`}
+      >
+        {column.cards.map((card) => (
+          <Card
+            key={card.id}
+            card={card}
+            onDelete={onDeleteCard}
+          />
+        ))}
+      </div>
       <input
         value={input}
         onChange={(e) => setInput(e.target.value)}
