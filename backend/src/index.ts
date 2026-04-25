@@ -3,6 +3,8 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import swaggerUi from 'swagger-ui-express'    
+import swaggerSpec from './swagger' 
 import './config/db'
 import authRoutes from './modules/auth/auth.routes'
 import boardRoutes from './modules/boards/board.routes'
@@ -23,6 +25,8 @@ const io = new Server(httpServer, {
 
 app.use(cors())
 app.use(express.json())
+
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/boards', boardRoutes)
