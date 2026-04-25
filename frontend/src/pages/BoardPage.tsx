@@ -149,6 +149,24 @@ function BoardPage() {
     }
   }
 
+  const editColumn = async (columnId: string, title: string) => {
+    try {
+      await api.patch(`/columns/${columnId}`, { title })
+      setBoard(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          columns: prev.columns.map(col =>
+            col.id === columnId ? { ...col, title } : col
+          )
+        }
+      })
+    } catch (err) {
+      console.log("Error editing column:", err)
+    }
+  }
+
+
   const deleteCard = async (cardId: string) => {
     try {
       await api.delete(`/cards/${cardId}`)
@@ -260,6 +278,7 @@ function BoardPage() {
                 onDeleteCard={deleteCard}
                 onDeleteColumn={deleteColumn}
                 onEditCard={editCard} 
+                onEditColumn={editColumn}
               />
             ))}
           </div>
