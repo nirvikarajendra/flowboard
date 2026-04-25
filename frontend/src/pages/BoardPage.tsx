@@ -1,14 +1,54 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import api from '../api/axios'
 import type { Board } from '../types'
 import Column from '../components/Column'
 import Navbar from '../components/Navbar'
+import { io, Socket } from 'socket.io-client'
+
 
 function BoardPage() {
   const { boardId } = useParams()
   const [board, setBoard] = useState<Board | null>(null)
   const [newColumnTitle, setNewColumnTitle] = useState("")
+
+  const socketRef = useRef<Socket | null>(null)
+
+  useEffect(() => {
+    socketRef.current = io('http://localhost:8000')
+    socketRef.current.emit('join_board', boardId)
+
+    socketRef.current.on('card_created', (data: any) => {
+      setBoard(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          columns: prev.columns.map(col =>
+            col.id === data.card.column_id
+              ? { ...col, cards: [...col.cards, data.card] }
+              : col
+          )
+        }
+      })
+    })
+
+    socketRef.current.on('card_deleted', (data: any) => {
+      setBoard(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          columns: prev.columns.map(col => ({
+            ...col,
+            cards: col.cards.filter(card => card.id !== data.cardId)
+          }))
+        }
+      })
+    })
+
+    return () => {
+      socketRef.current?.disconnect()
+    }
+  }, [boardId])
 
   useEffect(() => {
     fetchBoard()
@@ -59,6 +99,7 @@ function BoardPage() {
           )
         }
       })
+      socketRef.current?.emit('card_created', { boardId, card: res.data })
     } catch (err) {
       console.log("Error adding card:", err)
     }
@@ -77,6 +118,7 @@ function BoardPage() {
           }))
         }
       })
+      socketRef.current?.emit('card_deleted', { boardId, cardId })
     } catch (err) {
       console.log("Error deleting card:", err)
     }
