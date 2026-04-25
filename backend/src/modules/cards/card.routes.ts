@@ -6,7 +6,7 @@ const router = Router()
 
 router.post('/', auth, addCard)
 router.delete('/:cardId', auth, removeCard)
-router.patch('/:cardId', auth, editCard)
+router.put('/:cardId', auth, editCard)
 router.patch('/:cardId/move', auth, transferCard)
 
 export default router
