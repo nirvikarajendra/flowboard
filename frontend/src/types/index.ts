@@ -7,7 +7,7 @@ export interface User{
 export interface Card{
     id: string,
     title: string,
-    description: string,
+    description?: string,
     position: number,
     column_id: string
 }

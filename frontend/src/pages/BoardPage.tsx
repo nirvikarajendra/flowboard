@@ -101,12 +101,13 @@ function BoardPage() {
     }
   }
 
-  const addCard = async (columnId: string, title: string) => {
+  const addCard = async (columnId: string, title: string, description: string = "") => {
     try {
       const res = await api.post('/cards', {
         column_id: columnId,
         title,
-        position: 0
+        position: 0,
+        description
       })
       setBoard(prev => {
         if (!prev) return prev
@@ -122,6 +123,29 @@ function BoardPage() {
       socketRef.current?.emit('card_created', { boardId, card: res.data })
     } catch (err) {
       console.log("Error adding card:", err)
+    }
+  }
+
+  const editCard = async (cardId: string, title: string, description: string) => {
+    try {
+      const res = await api.put(`/cards/${cardId}`, {
+        title,
+        description
+      })
+      setBoard(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          columns: prev.columns.map(col => ({
+            ...col,
+            cards: col.cards.map(card =>
+              card.id === cardId ? { ...card, ...res.data } : card
+            )
+          }))
+        }
+      })
+    } catch (err) {
+      console.log("Error editing card:", err)
     }
   }
 
@@ -235,6 +259,7 @@ function BoardPage() {
                 onAddCard={addCard}
                 onDeleteCard={deleteCard}
                 onDeleteColumn={deleteColumn}
+                onEditCard={editCard} 
               />
             ))}
           </div>

@@ -5,24 +5,31 @@ import { useDroppable } from '@dnd-kit/core'
 
 interface ColumnProps {
   column: ColumnType
-  onAddCard: (columnId: string, title: string) => void
+  onAddCard: (columnId: string, title: string, description?: string) => void
   onDeleteCard: (cardId: string) => void
   onDeleteColumn: (columnId: string) => void
+  onEditCard: (cardId: string, title: string, description: string) => void  
 }
 
-function Column({ column, onAddCard, onDeleteCard, onDeleteColumn }: ColumnProps) {
-  const [input, setInput] = useState("")
+function Column({ column, onAddCard, onDeleteCard, onDeleteColumn, onEditCard }: ColumnProps) {
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")  
+  const [showForm, setShowForm] = useState(false)   
 
-  const { setNodeRef, isOver } = useDroppable( {id: column.id} )
+  const { setNodeRef, isOver } = useDroppable({ id: column.id })
 
   const handleAdd = () => {
-    if (input.trim() === "") return
-    onAddCard(column.id, input)
-    setInput("")
+    if (title.trim() === "") return
+    onAddCard(column.id, title, description)  
+    setTitle("")
+    setDescription("")
+    setShowForm(false)
   }
 
   return (
     <div className="bg-gray-200 rounded-lg p-4 w-72 shrink-0">
+
+      {/* Column Header */}
       <div className="flex justify-between items-center mb-3">
         <h2 className="font-bold text-base">{column.title}</h2>
         <button
@@ -32,6 +39,8 @@ function Column({ column, onAddCard, onDeleteCard, onDeleteColumn }: ColumnProps
           x
         </button>
       </div>
+
+      {/* Cards */}
       <div
         ref={setNodeRef}
         className={`min-h-16 rounded ${isOver ? 'bg-gray-300' : ''}`}
@@ -41,21 +50,55 @@ function Column({ column, onAddCard, onDeleteCard, onDeleteColumn }: ColumnProps
             key={card.id}
             card={card}
             onDelete={onDeleteCard}
+            onEdit={onEditCard}  
           />
         ))}
       </div>
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Add a card..."
-        className="w-full p-2 rounded mt-2 text-sm"
-      />
-      <button
-        onClick={handleAdd}
-        className="w-full bg-blue-500 text-white rounded p-2 mt-2 text-sm"
-      >
-        Add Card
-      </button>
+
+      {/* Add Card Form */}
+      {showForm ? (
+        <div className="mt-2 flex flex-col gap-2">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Card title..."
+            className="w-full p-2 rounded text-sm"
+          />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Description (optional)..."
+            className="w-full p-2 rounded text-sm resize-none"
+            rows={3}
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={handleAdd}
+              className="flex-1 bg-blue-500 text-white rounded p-2 text-sm"
+            >
+              Add Card
+            </button>
+            <button
+              onClick={() => {
+                setShowForm(false)
+                setTitle("")
+                setDescription("")
+              }}
+              className="flex-1 bg-gray-400 text-white rounded p-2 text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setShowForm(true)}
+          className="w-full bg-blue-500 text-white rounded p-2 mt-2 text-sm"
+        >
+          + Add Card
+        </button>
+      )}
+
     </div>
   )
 }
