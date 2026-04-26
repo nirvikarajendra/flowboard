@@ -47,21 +47,17 @@ A real-time Kanban board application inspired by Trello, built with React, Node.
 cd backend
 npm install
 npm run dev
-
+```
 ### Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
-
+```
 #### Environment Variables
 Create .env in backend folder:
+```
 DATABASE_URL=
 JWT_SECRET=
-
-Then commit and push:
-```bash
-git add .
-git commit -m "docs: add README"
-git push
+```
 
