@@ -15,7 +15,7 @@ function Navbar() {
         className="bg-white text-blue-600 px-4 py-2 rounded text-sm font-bold"
         onClick={() => {
           localStorage.removeItem('token')
-          window.location.href = '/login'
+          navigate('/login')
         }}
       >
         Logout
